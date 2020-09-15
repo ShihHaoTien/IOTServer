@@ -11,7 +11,10 @@ from django.http import HttpResponse,JsonResponse,HttpRequest
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 from . import apps 
+from django.conf import settings
 # Create your views here.
+
+STATE='FIRST'
 
 @csrf_exempt
 def switch(request):
@@ -21,6 +24,7 @@ def switch(request):
     }
     print('method:'+request.method)
     print('body:'+request.body.decode())
+    global STATE
     if request.method=='POST':
         if request.body.decode()=='':
             switch_res['status']="none"
@@ -32,14 +36,30 @@ def switch(request):
             else:
                 action=''
             if action=='on':
-                switch_res['status']='on'
+                STATE='on'
+                switch_res['status']=STATE
                 print("POST ON SUCCESS")
             elif action=='off':
-                switch_res['status']='off'
+                STATE='off'
+                switch_res['status']=STATE
                 print("POST OFF SUCCESS")
             else:
                 switch_res['status']="none"
                 print("ERROR: NONE ACTION")
     switch_res['date']=datetime.now()
     return JsonResponse(switch_res)
+
+@csrf_exempt
+def get_status(request):
+    status_res={
+        "status":STATE
+    }
+    print('method:'+request.method)
+    print('body:'+request.body.decode())
+    if request.method=='GET':
+        return JsonResponse(status_res)
+    else:
+        status_res['status']="none"
+        return JsonResponse(status_res)
+        
 
